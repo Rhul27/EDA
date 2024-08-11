@@ -5,7 +5,6 @@ import plotly.express as px
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, LabelEncoder
 from scipy import stats
 import seaborn as sns
-import matplotlib.pyplot as plt
 
 # Set the title of the app
 st.title("Advanced EDA and CSV Modification App")
@@ -113,13 +112,20 @@ if uploaded_file is not None:
         if st.checkbox("Encode Categorical Data"):
             cat_column = st.selectbox("Select categorical column to encode", df_filtered.select_dtypes(include=['object']).columns)
             encoding_type = st.selectbox("Select encoding type", ["Label Encoding", "One-Hot Encoding"])
-            if encoding_type == "Label Encoding":
-                le = LabelEncoder()
-                df_filtered[cat_column] = le.fit_transform(df_filtered[cat_column])
-            elif encoding_type == "One-Hot Encoding":
-                df_filtered = pd.get_dummies(df_filtered, columns=[cat_column])
-            st.write(f"Encoded Data Preview ({encoding_type})")
-            st.write(df_filtered.head())
+            
+            if cat_column:
+                try:
+                    if encoding_type == "Label Encoding":
+                        le = LabelEncoder()
+                        df_filtered[cat_column] = le.fit_transform(df_filtered[cat_column].astype(str))  # Ensure all values are strings
+                    elif encoding_type == "One-Hot Encoding":
+                        df_filtered = pd.get_dummies(df_filtered, columns=[cat_column])
+                    st.write(f"Encoded Data Preview ({encoding_type})")
+                    st.write(df_filtered.head())
+                except Exception as e:
+                    st.error(f"An error occurred: {e}")
+            else:
+                st.write("Please select a column for encoding.")
 
         # Feature Engineering
         st.write("### Feature Engineering")
